@@ -52,7 +52,6 @@ export class DashboardPage {
    * @param {Boolean} saveAsNew Whether to save as new visualization
    * @param {Boolean} returnToDashboard Whether to return to the home dashboard
    */
-  
   saveDashboardVisualization(title, saveAsNew = false, returnToDashboard = false) {
     this.testRunner.get('[data-test-subj="visualizeSaveButton"]').click()
     this.testRunner.get('[data-test-subj="savedObjectTitle"]').type(`{selectall}${title}`)
@@ -69,4 +68,22 @@ export class DashboardPage {
     this.testRunner.get('[data-test-subj="confirmSaveSavedObjectButton"]').click()
   }
 
+  /**
+   * Open the context/options menu for a dashboards visualization given its title name.
+   * CAUTION: if multiple visualizations have the same name, this method will fail
+   * @param {String} panelName Name of the dashboards visualization
+   */
+  openVisualizationContextMenu(panelName) {
+    const removeSpaces = (keyword) => {
+      return keyword.replace(/\s+/g, '')
+    }
+    this.testRunner.get(`[data-test-subj="embeddablePanelHeading-${removeSpaces(panelName)}"]`).find('[data-test-subj="embeddablePanelToggleMenuIcon"]').click()
+  }
+
+  /**
+   * Click on the edit button in a dashboard visualization's context menu
+   */
+  clickEditVisualization() {
+    this.testRunner.get('[data-test-subj="embeddablePanelAction-editPanel"]').click()
+  }
 }

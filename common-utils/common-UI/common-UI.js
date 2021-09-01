@@ -4,6 +4,17 @@ export class CommonUI {
   }
 
   /**
+   * Generate a selector string for a filter based on its field attribute.
+   * CAUTION: retrieving the elements associated with the returned selector string 
+   * may produce multiple filters if they all correspond to the same field attribute 
+   * @param {String} field Field attribute value of the filter
+   * @returns {String}
+   */
+  #generateFilterSearchString(field) {
+    return `[data-test-subj~="filter"][data-test-subj~="filter-key-${field}"]`
+  }
+
+  /**
    * Sets the page date range
    * @param {String} start Start datetime to set
    * @param {String} end  End datetime to set
@@ -40,7 +51,6 @@ export class CommonUI {
 
     // Attempt up to three times to select the desired field and operator options and input the value (if applicable)
     const tryToAddFilter = (field, operator, value = null, retry = 0) => {
-      this.testRunner.wait(3000)
       this.testRunner.get('[data-test-subj="addFilter"]').click({ scrollBehavior: 'center' }).then(() => {
         selectComboBoxInput('filterFieldSuggestionList', field)
         this.testRunner.get('[data-test-subj="filterFieldSuggestionList"]').then(($field) => {
@@ -60,6 +70,7 @@ export class CommonUI {
                   this.testRunner.get('[data-test-subj="filterParams"]').find('input').type(value)
                 }
                 this.testRunner.get('[data-test-subj="saveFilter"]').click()
+                this.testRunner.get(this.#generateFilterSearchString(field)).last().should('be.visible')
               }
             })
           }
@@ -97,7 +108,67 @@ export class CommonUI {
     if (value != null) {
       this.testRunner.get('[data-test-subj="filterParams"]').find('input').type(value)
     }
+
     this.testRunner.get('[data-test-subj="saveFilter"]').click()
+    this.testRunner.get(this.#generateFilterSearchString(field)).last().should('be.visible')
+  }
+
+  /**
+   * Pins a filter with a specified field attribute and an optional
+   * index number representing which position the desired filter is located at
+   * out of multiple filters with the same field attribute value
+   * @param {String} field Field attribute value to search for
+   * @param {Number} index Optional index position from an array of filter elements
+   */
+  pinFilter(field, index=0) {
+    this.testRunner.get(this.#generateFilterSearchString(field)).eq(index).click()
+    this.testRunner.get('[data-test-subj="pinFilter"]').click()
+  }
+
+  /**
+   * Removes a filter with a specified field attribute and an optional
+   * index number representing which position the desired filter is located at
+   * out of multiple filters with the same field attribute value
+   * @param {String} field Field attribute value to search for
+   * @param {Number} index Optional index position from an array of filter elements
+   */
+  removeFilter(field, index=0) {
+    this.testRunner.get(this.#generateFilterSearchString(field)).then(($filters) => {
+      const numFilters = $filters.length
+      cy.wrap($filters).eq(index).click()
+      this.testRunner.get('[data-test-subj="deleteFilter"]').click()
+      if(numFilters - 1 == 0){
+        this.testRunner.get(this.#generateFilterSearchString(field)).should('not.exist')
+      }
+      else {
+        this.testRunner.get(this.#generateFilterSearchString(field)).should('be.length', numFilter - 1)
+      }
+    })
+  }
+
+  /**
+   * Removes all filters from the page
+   */
+  removeAllFilters() {
+    this.testRunner.get('[data-test-subj="showFilterActions"]').click()
+    this.testRunner.get('[data-test-subj="removeAllFilters"]').click()
+  }
+
+  /**
+   * Filters a pie chart visualization by a specified slice
+   * @param {String} name Name of the pie chart slice to filter on
+   */
+  pieChartFilterOnSlice(name) {
+    this.testRunner.get(`[data-test-subj="pieSlice-${name}"]`).click()
+  }
+
+  /**
+   * Removes a filters placed on a pie chart visualization with a specific keyword
+   * @param {String} keyword Keyword for the pie chart filter
+   */
+  pieChartRemoveFilter(keyword) {
+    this.testRunner.get(this.#generateFilterSearchString(keyword)).click()
+    this.testRunner.get('[data-test-subj="deleteFilter"]').click()
   }
 
   /**
@@ -154,11 +225,22 @@ export class CommonUI {
   /**
    * Asserts each value in an array of strings is contained within an element
    * @param {String} selector Selector for element of interest
-   * @param {Array} values Array of string values
+   * @param {Array} value Array of string values
    */
   checkValuesExistInComponent(selector, value) {
     this.testRunner.wrap(value).each((str) => {
       this.testRunner.get(selector).contains(new RegExp(`^${str}$`))
+    })
+  }
+
+  /**
+   * Asserts each value in an array of strings is not contained within an element
+   * @param {String} selector Selector for element of interest
+   * @param {Array} value Array of string values
+   */
+  checkValuesDoNotExistInComponent(selector, value) {
+    this.testRunner.wrap(value).each((str) => {
+      this.testRunner.get(selector).should('not.contain', new RegExp(`^${str}$`))
     })
   }
 }

@@ -10,7 +10,7 @@ export class CommonUI {
    * @param {String} field Field attribute value of the filter
    * @returns {String}
    */
-  #generateFilterSearchString(field) {
+  _generateFilterSearchString(field) {
     return `[data-test-subj~="filter"][data-test-subj~="filter-key-${field}"]`
   }
 
@@ -70,7 +70,7 @@ export class CommonUI {
                   this.testRunner.get('[data-test-subj="filterParams"]').find('input').type(value)
                 }
                 this.testRunner.get('[data-test-subj="saveFilter"]').click()
-                this.testRunner.get(this.#generateFilterSearchString(field)).last().should('be.visible')
+                this.testRunner.get(this._generateFilterSearchString(field)).last().should('be.visible')
               }
             })
           }
@@ -110,7 +110,7 @@ export class CommonUI {
     }
 
     this.testRunner.get('[data-test-subj="saveFilter"]').click()
-    this.testRunner.get(this.#generateFilterSearchString(field)).last().should('be.visible')
+    this.testRunner.get(this._generateFilterSearchString(field)).last().should('be.visible')
   }
 
   /**
@@ -121,7 +121,7 @@ export class CommonUI {
    * @param {Number} index Optional index position from an array of filter elements
    */
   pinFilter(field, index=0) {
-    this.testRunner.get(this.#generateFilterSearchString(field)).eq(index).click()
+    this.testRunner.get(this._generateFilterSearchString(field)).eq(index).click()
     this.testRunner.get('[data-test-subj="pinFilter"]').click()
   }
 
@@ -133,15 +133,15 @@ export class CommonUI {
    * @param {Number} index Optional index position from an array of filter elements
    */
   removeFilter(field, index=0) {
-    this.testRunner.get(this.#generateFilterSearchString(field)).then(($filters) => {
+    this.testRunner.get(this._generateFilterSearchString(field)).then(($filters) => {
       const numFilters = $filters.length
       cy.wrap($filters).eq(index).click()
       this.testRunner.get('[data-test-subj="deleteFilter"]').click()
       if(numFilters - 1 == 0){
-        this.testRunner.get(this.#generateFilterSearchString(field)).should('not.exist')
+        this.testRunner.get(this._generateFilterSearchString(field)).should('not.exist')
       }
       else {
-        this.testRunner.get(this.#generateFilterSearchString(field)).should('be.length', numFilter - 1)
+        this.testRunner.get(this._generateFilterSearchString(field)).should('be.length', numFilter - 1)
       }
     })
   }
@@ -167,7 +167,7 @@ export class CommonUI {
    * @param {String} keyword Keyword for the pie chart filter
    */
   pieChartRemoveFilter(keyword) {
-    this.testRunner.get(this.#generateFilterSearchString(keyword)).click()
+    this.testRunner.get(this._generateFilterSearchString(keyword)).click()
     this.testRunner.get('[data-test-subj="deleteFilter"]').click()
   }
 

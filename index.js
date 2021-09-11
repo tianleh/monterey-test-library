@@ -11,3 +11,5 @@ export { TestFixtureHandler } from './common-utils/network/test-fixture-handler.
 export { CommonUI } from './common-utils/common-UI/common-UI.js'
 
 export { MiscUtils } from './common-utils/misc-utils.js'
+
+export { LoginPage } from './page-object-model/login-page/login-page.js'
